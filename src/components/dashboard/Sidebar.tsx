@@ -10,16 +10,15 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function Sidebar({ className, activeView, onNavigate }: SidebarProps) {
   return (
-    <div className={cn("pb-12 w-64 border-r bg-sidebar h-screen hidden md:block fixed left-0 top-0 z-30", className)}>
+    <div className={cn("pb-12 w-64 border-r bg-sidebar h-full", className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
           <div className="flex items-center gap-2 px-4 mb-8">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
-            <h2 className="text-lg font-bold tracking-tight text-primary">
-              Spijker<span className="text-secondary">AI</span>
-            </h2>
+            <img 
+              src="https://harmless-tapir-303.convex.cloud/api/storage/a16f5f1d-198f-400b-9015-cd0deb4b29d1" 
+              alt="Spijker en Co" 
+              className="h-8 w-auto object-contain"
+            />
           </div>
           <div className="space-y-1">
             <Button
