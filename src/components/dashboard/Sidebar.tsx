@@ -17,7 +17,7 @@ export function Sidebar({ className, activeView, onNavigate }: SidebarProps) {
             <img 
               src="https://harmless-tapir-303.convex.cloud/api/storage/a16f5f1d-198f-400b-9015-cd0deb4b29d1" 
               alt="Spijker en Co" 
-              className="h-8 w-auto object-contain"
+              className="h-8 w-auto object-contain invert dark:invert-0 transition-all"
             />
           </div>
           <div className="space-y-1">

@@ -4,12 +4,13 @@ import { GeneratedImage, ResultsGallery } from "@/components/dashboard/ResultsGa
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/use-auth";
-import { ArrowLeft, ArrowRight, Sparkles, Image as ImageIcon, History, Menu, Sun, Moon } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Image as ImageIcon, History, Menu, Sun, Moon, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const [status, setStatus] = useState("");
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Theme toggle logic
   useEffect(() => {
@@ -103,14 +105,34 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       {/* Desktop Sidebar */}
-      <div className="hidden md:block fixed left-0 top-0 bottom-0 z-30">
-        <Sidebar activeView={view} onNavigate={setView} />
+      <div 
+        className={cn(
+          "hidden md:block fixed left-0 top-0 bottom-0 z-30 transition-all duration-300 ease-in-out overflow-hidden border-r bg-sidebar",
+          isSidebarOpen ? "w-64 translate-x-0" : "w-0 -translate-x-full opacity-0"
+        )}
+      >
+        <Sidebar activeView={view} onNavigate={setView} className="border-none" />
       </div>
       
-      <div className="md:pl-64 flex flex-col min-h-screen transition-all duration-300">
+      <div 
+        className={cn(
+          "flex flex-col min-h-screen transition-all duration-300 ease-in-out",
+          isSidebarOpen ? "md:pl-64" : "md:pl-0"
+        )}
+      >
         {/* Header */}
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            {/* Desktop Sidebar Toggle */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hidden md:flex text-muted-foreground hover:text-foreground"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            >
+              {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeftOpen className="h-5 w-5" />}
+            </Button>
+
             {/* Mobile Sidebar Trigger */}
             <Sheet>
               <SheetTrigger asChild>
