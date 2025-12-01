@@ -82,12 +82,58 @@ export function UploadPanel({ onGenerate, isGenerating }: UploadPanelProps) {
     setDescription("");
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!description && !image) {
       toast.error("Please provide at least an image or a description");
       return;
     }
-    onGenerate({ image, pdf, description });
+
+    // Notify parent to start generating (sets isGenerating to true)
+    onGenerate({ image, pdf, description, webhookResult: null, isStarting: true });
+
+    try {
+      // Create FormData for the webhook
+      const formData = new FormData();
+      if (image) formData.append("image", image);
+      if (pdf) formData.append("pdf", pdf);
+      if (description) formData.append("description", description);
+
+      // Show processing message
+      toast.info("Processing... This may take up to 10 minutes");
+
+      // Call the n8n webhook with 10 minute timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000); // 10 minutes
+
+      const response = await fetch("https://spijkerenco.app.n8n.cloud/webhook-test/upload-image", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error("Failed to process the request");
+      }
+
+      const result = await response.json();
+      
+      // Pass the result to the parent component
+      onGenerate({ image, pdf, description, webhookResult: result, isStarting: false });
+      
+      toast.success("Processing complete!");
+    } catch (error) {
+      // Notify parent that generation failed
+      onGenerate({ image, pdf, description, webhookResult: null, isStarting: false, error: true });
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        toast.error("Request timed out after 10 minutes. Please try again.");
+      } else {
+        console.error("Error calling webhook:", error);
+        toast.error("Failed to process. Please try again.");
+      }
+    }
   };
 
   return (
@@ -223,7 +269,14 @@ export function UploadPanel({ onGenerate, isGenerating }: UploadPanelProps) {
             onClick={handleGenerate}
             disabled={isGenerating}
           >
-            {isGenerating ? "Processing..." : "Generate Images"}
+            {isGenerating ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin">⏳</span>
+                Processing...
+              </span>
+            ) : (
+              "Generate Images"
+            )}
           </Button>
         </div>
       </CardContent>

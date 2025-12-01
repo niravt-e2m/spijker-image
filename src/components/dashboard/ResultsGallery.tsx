@@ -10,6 +10,9 @@ export interface GeneratedImage {
   url: string;
   timestamp: number;
   prompt: string;
+  name?: string;
+  driveUrl?: string;
+  folderId?: string;
 }
 
 interface ResultsGalleryProps {
@@ -37,7 +40,7 @@ export function ResultsGallery({ images, onDelete }: ResultsGalleryProps) {
   return (
     <div className="space-y-4 h-full flex flex-col">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-primary">Results Gallery</h2>
+        <h2 className="text-xl font-bold text-white">Results Gallery</h2>
         <div className="flex items-center gap-2">
           {selected.length > 0 && (
             <>
@@ -105,13 +108,36 @@ export function ResultsGallery({ images, onDelete }: ResultsGalleryProps) {
                   </Dialog>
                 </div>
                 
-                <div className="flex gap-2 justify-end">
-                  <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full bg-white text-primary hover:bg-white/90">
-                    <Download className="h-4 w-4" />
-                  </Button>
-                  <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full bg-white text-primary hover:bg-white/90">
-                    <Share2 className="h-4 w-4" />
-                  </Button>
+                <div className="space-y-2">
+                  {image.name && (
+                    <p className="text-xs text-white font-medium truncate">{image.name}</p>
+                  )}
+                  <div className="flex gap-2 justify-end">
+                    <a 
+                      href={`https://drive.google.com/uc?export=download&id=${image.id}`}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full bg-white text-primary hover:bg-white/90">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </a>
+                    {image.driveUrl && (
+                      <a 
+                        href={image.driveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full bg-white text-primary hover:bg-white/90">
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      </a>
+                    )}
+                    <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full bg-white text-primary hover:bg-white/90">
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
