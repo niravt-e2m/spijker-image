@@ -108,16 +108,16 @@ export default function Dashboard() {
       <div 
         className={cn(
           "hidden md:block fixed left-0 top-0 bottom-0 z-30 transition-all duration-300 ease-in-out overflow-hidden border-r bg-sidebar",
-          isSidebarOpen ? "w-64 translate-x-0" : "w-0 -translate-x-full opacity-0"
+          isSidebarOpen ? "w-64" : "w-20"
         )}
       >
-        <Sidebar activeView={view} onNavigate={setView} className="border-none" />
+        <Sidebar activeView={view} onNavigate={setView} collapsed={!isSidebarOpen} className="border-none" />
       </div>
       
       <div 
         className={cn(
           "flex flex-col min-h-screen transition-all duration-300 ease-in-out",
-          isSidebarOpen ? "md:pl-64" : "md:pl-0"
+          isSidebarOpen ? "md:pl-64" : "md:pl-20"
         )}
       >
         {/* Header */}
