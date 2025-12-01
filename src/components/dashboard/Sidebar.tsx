@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { History, Home, Image as ImageIcon, Settings, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { History, Home, Image as ImageIcon, Sparkles } from "lucide-react";
 
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
+  activeView: string;
+  onNavigate: (view: string) => void;
+}
 
-export function Sidebar({ className }: SidebarProps) {
-  const [active, setActive] = useState("generate");
-
+export function Sidebar({ className, activeView, onNavigate }: SidebarProps) {
   return (
     <div className={cn("pb-12 w-64 border-r bg-sidebar h-screen hidden md:block fixed left-0 top-0 z-30", className)}>
       <div className="space-y-4 py-4">
@@ -23,28 +23,28 @@ export function Sidebar({ className }: SidebarProps) {
           </div>
           <div className="space-y-1">
             <Button
-              variant={active === "generate" ? "secondary" : "ghost"}
+              variant={activeView === "dashboard" ? "secondary" : "ghost"}
               className="w-full justify-start"
-              onClick={() => setActive("generate")}
+              onClick={() => onNavigate("dashboard")}
+            >
+              <Home className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+            <Button
+              variant={activeView === "generate" ? "secondary" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onNavigate("generate")}
             >
               <ImageIcon className="mr-2 h-4 w-4" />
               Generate
             </Button>
             <Button
-              variant={active === "history" ? "secondary" : "ghost"}
+              variant={activeView === "history" ? "secondary" : "ghost"}
               className="w-full justify-start"
-              onClick={() => setActive("history")}
+              onClick={() => onNavigate("history")}
             >
               <History className="mr-2 h-4 w-4" />
               History
-            </Button>
-            <Button
-              variant={active === "settings" ? "secondary" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => setActive("settings")}
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
             </Button>
           </div>
         </div>

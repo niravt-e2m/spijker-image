@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { FileText, Image as ImageIcon, Upload, X } from "lucide-react";
+import { FileText, Image as ImageIcon, Trash2, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -65,13 +65,21 @@ export function UploadPanel({ onGenerate, isGenerating }: UploadPanelProps) {
     }
   };
 
-  const handleClear = () => {
+  const removeImage = () => {
     setImage(null);
     setImagePreview(null);
-    setPdf(null);
-    setDescription("");
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removePdf = () => {
+    setPdf(null);
     if (pdfInputRef.current) pdfInputRef.current.value = "";
+  };
+
+  const handleClear = () => {
+    removeImage();
+    removePdf();
+    setDescription("");
   };
 
   const handleGenerate = () => {
@@ -91,39 +99,18 @@ export function UploadPanel({ onGenerate, isGenerating }: UploadPanelProps) {
         {/* Image Upload Area */}
         <div className="space-y-2">
           <Label>Source Image</Label>
-          <div
-            className={cn(
-              "border-2 border-dashed rounded-xl p-6 transition-all duration-200 ease-in-out flex flex-col items-center justify-center text-center cursor-pointer min-h-[200px]",
-              isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50",
-              imagePreview ? "p-2" : ""
-            )}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => !imagePreview && fileInputRef.current?.click()}
-          >
-            {imagePreview ? (
-              <div className="relative w-full h-full min-h-[200px] group">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-full object-contain rounded-lg max-h-[300px]"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setImage(null);
-                      setImagePreview(null);
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ) : (
+          
+          {!image ? (
+            <div
+              className={cn(
+                "border-2 border-dashed rounded-xl p-6 transition-all duration-200 ease-in-out flex flex-col items-center justify-center text-center cursor-pointer min-h-[160px]",
+                isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50"
+              )}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
               <div className="flex flex-col items-center gap-2">
                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
                   <Upload className="h-6 w-6 text-primary" />
@@ -131,15 +118,38 @@ export function UploadPanel({ onGenerate, isGenerating }: UploadPanelProps) {
                 <p className="text-sm font-medium">Click or drag image here</p>
                 <p className="text-xs text-muted-foreground">JPG, PNG, WebP up to 10MB</p>
               </div>
-            )}
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept="image/*"
-              onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
-            />
-          </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4 p-3 border rounded-xl bg-muted/20">
+              <div className="h-16 w-16 rounded-lg overflow-hidden bg-background border shrink-0">
+                <img 
+                  src={imagePreview || ""} 
+                  alt="Preview" 
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{image.name}</p>
+                <p className="text-xs text-muted-foreground">{(image.size / 1024 / 1024).toFixed(2)} MB</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={removeImage}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+          />
         </div>
 
         {/* Description */}
@@ -159,35 +169,43 @@ export function UploadPanel({ onGenerate, isGenerating }: UploadPanelProps) {
         {/* PDF Upload */}
         <div className="space-y-2">
           <Label>Instructions (PDF)</Label>
-          <div className="flex items-center gap-2">
+          
+          {!pdf ? (
             <Button
               variant="outline"
-              className="w-full justify-start text-muted-foreground hover:text-foreground"
+              className="w-full justify-start text-muted-foreground hover:text-foreground h-12"
               onClick={() => pdfInputRef.current?.click()}
             >
               <FileText className="mr-2 h-4 w-4" />
-              {pdf ? pdf.name : "Upload detailed instructions..."}
+              Upload detailed instructions...
             </Button>
-            {pdf && (
+          ) : (
+            <div className="flex items-center gap-4 p-3 border rounded-xl bg-muted/20">
+              <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                <FileText className="h-5 w-5 text-red-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{pdf.name}</p>
+                <p className="text-xs text-muted-foreground">{(pdf.size / 1024).toFixed(0)} KB</p>
+              </div>
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => {
-                  setPdf(null);
-                  if (pdfInputRef.current) pdfInputRef.current.value = "";
-                }}
+                className="text-muted-foreground hover:text-destructive"
+                onClick={removePdf}
               >
-                <X className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </Button>
-            )}
-            <input
-              type="file"
-              ref={pdfInputRef}
-              className="hidden"
-              accept="application/pdf"
-              onChange={handlePdfUpload}
-            />
-          </div>
+            </div>
+          )}
+          
+          <input
+            type="file"
+            ref={pdfInputRef}
+            className="hidden"
+            accept="application/pdf"
+            onChange={handlePdfUpload}
+          />
         </div>
 
         {/* Actions */}
