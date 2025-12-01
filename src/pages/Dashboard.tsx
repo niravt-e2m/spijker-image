@@ -104,84 +104,76 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
-      {/* Fixed Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-background/80 backdrop-blur-md border-b px-4 flex items-center justify-between transition-all duration-300">
-        <div className="flex items-center gap-4">
-          {/* Logo Area - Fixed Top Left */}
-          <div className="flex items-center gap-2 w-64 shrink-0">
-            <img 
-              src="https://harmless-tapir-303.convex.cloud/api/storage/a16f5f1d-198f-400b-9015-cd0deb4b29d1" 
-              alt="Spijker en Co" 
-              className="h-8 w-auto object-contain brightness-0 dark:brightness-0 dark:invert transition-all"
-            />
-          </div>
-
-          {/* Desktop Sidebar Toggle */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="hidden md:flex text-muted-foreground hover:text-foreground -ml-4"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          >
-            {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeftOpen className="h-5 w-5" />}
-          </Button>
-
-          {/* Mobile Sidebar Trigger */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64 pt-16">
-              <Sidebar activeView={view} onNavigate={setView} className="border-none" />
-            </SheetContent>
-          </Sheet>
-
-          {/* Breadcrumbs / Navigation Info */}
-          <div className="hidden md:flex items-center text-muted-foreground text-sm border-l pl-4 h-6">
-            {view === "dashboard" && "Dashboard"}
-            {view === "generate" && "Dashboard / New Generation"}
-            {view === "history" && "Dashboard / History"}
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          {view !== "dashboard" && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="gap-2 text-muted-foreground hover:text-foreground hidden sm:flex"
-              onClick={() => setView("dashboard")}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Button>
-          )}
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-muted-foreground">
-            {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-          </Button>
-        </div>
-      </header>
-
-      {/* Desktop Sidebar - Starts below header */}
+      {/* Desktop Sidebar */}
       <div 
         className={cn(
-          "hidden md:block fixed left-0 top-16 bottom-0 z-40 transition-all duration-300 ease-in-out overflow-hidden border-r bg-sidebar",
+          "hidden md:block fixed left-0 top-0 bottom-0 z-30 transition-all duration-300 ease-in-out overflow-hidden border-r bg-sidebar",
           isSidebarOpen ? "w-64 translate-x-0" : "w-0 -translate-x-full opacity-0"
         )}
       >
-        <Sidebar activeView={view} onNavigate={setView} className="border-none h-full" />
+        <Sidebar activeView={view} onNavigate={setView} className="border-none" />
       </div>
       
-      {/* Main Content - Padded top for header, left for sidebar */}
-      <main 
+      <div 
         className={cn(
-          "flex-1 min-h-screen pt-16 transition-all duration-300 ease-in-out",
+          "flex flex-col min-h-screen transition-all duration-300 ease-in-out",
           isSidebarOpen ? "md:pl-64" : "md:pl-0"
         )}
       >
-        <div className="p-6 lg:p-8 h-full overflow-y-auto">
+        {/* Header */}
+        <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {/* Desktop Sidebar Toggle */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hidden md:flex text-muted-foreground hover:text-foreground"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            >
+              {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeftOpen className="h-5 w-5" />}
+            </Button>
+
+            {/* Mobile Sidebar Trigger */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-64">
+                <Sidebar activeView={view} onNavigate={setView} className="border-none" />
+              </SheetContent>
+            </Sheet>
+
+            {/* Back Button */}
+            {view !== "dashboard" && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2 text-muted-foreground hover:text-foreground"
+                onClick={() => setView("dashboard")}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            )}
+
+            <div className="hidden md:flex items-center text-muted-foreground text-sm">
+              {view === "dashboard" && "Dashboard"}
+              {view === "generate" && "Dashboard / New Generation"}
+              {view === "history" && "Dashboard / History"}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-muted-foreground">
+              {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+            </Button>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           
           {/* Dashboard Home View */}
           {view === "dashboard" && (
@@ -321,8 +313,8 @@ export default function Dashboard() {
             </div>
           )}
 
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

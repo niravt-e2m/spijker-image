@@ -13,6 +13,13 @@ export function Sidebar({ className, activeView, onNavigate }: SidebarProps) {
     <div className={cn("pb-12 w-64 border-r bg-sidebar h-full", className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
+          <div className="flex items-center gap-2 px-4 mb-8">
+            <img 
+              src="https://harmless-tapir-303.convex.cloud/api/storage/a16f5f1d-198f-400b-9015-cd0deb4b29d1" 
+              alt="Spijker en Co" 
+              className="h-8 w-auto object-contain invert dark:invert-0 transition-all"
+            />
+          </div>
           <div className="space-y-1">
             <Button
               variant={activeView === "dashboard" ? "secondary" : "ghost"}
