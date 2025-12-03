@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { Download, ExternalLink, Share2, Trash2 } from "lucide-react";
+import { Download, ExternalLink, Trash2, Maximize2 } from "lucide-react";
 import { useState } from "react";
 
 export interface GeneratedImage {
@@ -38,9 +37,9 @@ export function ResultsGallery({ images, onDelete }: ResultsGalleryProps) {
   };
 
   return (
-    <div className="space-y-4 h-full flex flex-col">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-white">Results Gallery</h2>
+        <h2 className="text-xl font-bold text-foreground">Results Gallery</h2>
         <div className="flex items-center gap-2">
           {selected.length > 0 && (
             <>
@@ -61,11 +60,11 @@ export function ResultsGallery({ images, onDelete }: ResultsGalleryProps) {
       </div>
 
       {images.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-12 text-muted-foreground bg-muted/20">
+        <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-12 text-muted-foreground bg-muted/20">
           <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
             <Download className="h-8 w-8 opacity-50" />
           </div>
-          <p className="text-lg font-medium">No images generated yet</p>
+          <p className="text-lg font-medium text-foreground">No images generated yet</p>
           <p className="text-sm">Upload a source image and click Generate to start</p>
         </div>
       ) : (
@@ -78,10 +77,12 @@ export function ResultsGallery({ images, onDelete }: ResultsGalleryProps) {
                 selected.includes(image.id) && "ring-2 ring-secondary"
               )}
             >
-              <img
-                src={image.url}
-                alt={image.prompt}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              <iframe
+                src={`https://drive.google.com/file/d/${image.id}/preview`}
+                className="w-full h-full object-cover pointer-events-none"
+                allow="autoplay"
+                loading="lazy"
+                style={{ border: 'none' }}
               />
               
               {/* Overlay */}
@@ -92,25 +93,23 @@ export function ResultsGallery({ images, onDelete }: ResultsGalleryProps) {
                     onCheckedChange={() => toggleSelect(image.id)}
                     className="border-white data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                   />
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/40 border-none text-white">
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl w-full p-0 overflow-hidden bg-transparent border-none shadow-none">
-                      <img
-                        src={image.url}
-                        alt={image.prompt}
-                        className="w-full h-auto rounded-lg shadow-2xl"
-                      />
-                    </DialogContent>
-                  </Dialog>
+                  <a 
+                    href={image.driveUrl || `https://drive.google.com/file/d/${image.id}/view`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/40 border-none text-white">
+                      <Maximize2 className="h-4 w-4" />
+                    </Button>
+                  </a>
                 </div>
                 
                 <div className="space-y-2">
+                  {image.prompt && (
+                    <p className="text-xs text-white font-semibold truncate">{image.prompt}</p>
+                  )}
                   {image.name && (
-                    <p className="text-xs text-white font-medium truncate">{image.name}</p>
+                    <p className="text-xs text-white/70 font-medium truncate">{image.name}</p>
                   )}
                   <div className="flex gap-2 justify-end">
                     <a 
@@ -134,9 +133,6 @@ export function ResultsGallery({ images, onDelete }: ResultsGalleryProps) {
                         </Button>
                       </a>
                     )}
-                    <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full bg-white text-primary hover:bg-white/90">
-                      <Share2 className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
               </div>

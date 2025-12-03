@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive API Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: #333;
+            color: #fff;
+            font-size: 14px;
+        }
+        button {
+            background: #68074F;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #850660;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .warning { color: #fbbf24; }
+        .info { color: #60a5fa; }
+        h1 { color: #68074F; }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .image-grid img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 2px solid #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Google Drive API Tester</h1>
+        <p>Test if your Google Drive API is working correctly</p>
+        
+        <label>API Key:</label>
+        <input type="text" id="apiKey" value="AIzaSyBv1d1SW1_feMgPOoTUlBnlocjH0Xdg_mw" placeholder="Enter your Google Drive API Key">
+        
+        <label>Folder URL or ID:</label>
+        <input type="text" id="folderUrl" placeholder="https://drive.google.com/drive/folders/... or just the folder ID">
+        
+        <button onclick="testAPI()">🚀 Test API</button>
+        <button onclick="testImageURLs()">🖼️ Test Image URLs</button>
+        
+        <div id="result" class="result"></div>
+        <div id="images" class="image-grid"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const result = document.getElementById('result');
+            const className = type;
+            result.innerHTML += `<span class="${className}">${message}</span>\n`;
+        }
+
+        function clearLog() {
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('images').innerHTML = '';
+        }
+
+        function extractFolderId(input) {
+            // Extract folder ID from URL or return as-is if already an ID
+            const match = input.match(/folders\/([a-zA-Z0-9_-]+)/);
+            return match ? match[1] : input.trim();
+        }
+
+        async function testAPI() {
+            clearLog();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const folderInput = document.getElementById('folderUrl').value.trim();
+            
+            if (!apiKey) {
+                log('❌ ERROR: API Key is required', 'error');
+                return;
+            }
+            
+            if (!folderInput) {
+                log('❌ ERROR: Folder URL or ID is required', 'error');
+                return;
+            }
+
+            const folderId = extractFolderId(folderInput);
+            log(`📁 Testing folder ID: ${folderId}`, 'info');
+            log(`🔑 Using API Key: ${apiKey.substring(0, 10)}...`, 'info');
+            log('', 'info');
+
+            try {
+                log('⏳ Fetching files from Google Drive...', 'info');
+                
+                const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&key=${apiKey}&fields=files(id,name,mimeType,thumbnailLink,webContentLink,webViewLink,size,createdTime)&pageSize=100`;
+                
+                log(`📡 API URL: ${url.substring(0, 100)}...`, 'info');
+                log('', 'info');
+
+                const response = await fetch(url);
+                
+                log(`📊 Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log(`❌ ERROR Response: ${errorText}`, 'error');
+                    
+                    if (response.status === 403) {
+                        log('', 'error');
+                        log('⚠️ POSSIBLE CAUSES:', 'warning');
+                        log('1. API Key is invalid or expired', 'warning');
+                        log('2. Google Drive API is not enabled in Google Cloud Console', 'warning');
+                        log('3. API Key restrictions are blocking the request', 'warning');
+                        log('', 'warning');
+                        log('🔧 SOLUTIONS:', 'info');
+                        log('1. Go to: https://console.cloud.google.com/apis/credentials', 'info');
+                        log('2. Check your API key is valid', 'info');
+                        log('3. Enable Google Drive API: https://console.cloud.google.com/apis/library/drive.googleapis.com', 'info');
+                    } else if (response.status === 404) {
+                        log('', 'error');
+                        log('⚠️ Folder not found or not accessible', 'warning');
+                        log('Make sure the folder ID is correct and the folder is shared publicly', 'warning');
+                    }
+                    return;
+                }
+
+                const data = await response.json();
+                
+                log('✅ SUCCESS! API is working', 'success');
+                log('', 'success');
+                log(`📦 Total files in folder: ${data.files?.length || 0}`, 'info');
+                
+                if (data.files && data.files.length > 0) {
+                    const imageFiles = data.files.filter(f => f.mimeType?.startsWith('image/'));
+                    log(`🖼️ Image files: ${imageFiles.length}`, imageFiles.length > 0 ? 'success' : 'warning');
+                    log('', 'info');
+                    
+                    log('📋 FILE LIST:', 'info');
+                    data.files.forEach((file, index) => {
+                        const isImage = file.mimeType?.startsWith('image/');
+                        const icon = isImage ? '🖼️' : '📄';
+                        const size = file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'N/A';
+                        log(`${icon} ${index + 1}. ${file.name}`, isImage ? 'success' : 'info');
+                        log(`   Type: ${file.mimeType}`, 'info');
+                        log(`   Size: ${size}`, 'info');
+                        log(`   ID: ${file.id}`, 'info');
+                        log(`   Has webContentLink: ${!!file.webContentLink}`, file.webContentLink ? 'success' : 'warning');
+                        log(`   Has thumbnailLink: ${!!file.thumbnailLink}`, file.thumbnailLink ? 'success' : 'warning');
+                        log('', 'info');
+                    });
+
+                    if (imageFiles.length === 0) {
+                        log('⚠️ WARNING: No image files found in folder', 'warning');
+                        log('Make sure your n8n workflow is uploading images to this folder', 'warning');
+                    } else {
+                        log('✅ Ready to display images!', 'success');
+                        
+                        // Store for image URL testing
+                        window.testImages = imageFiles;
+                    }
+                } else {
+                    log('⚠️ WARNING: Folder is empty', 'warning');
+                }
+
+            } catch (error) {
+                log(`❌ ERROR: ${error.message}`, 'error');
+                log('', 'error');
+                log('🔧 TROUBLESHOOTING:', 'warning');
+                log('1. Check your internet connection', 'warning');
+                log('2. Verify the API key is correct', 'warning');
+                log('3. Make sure CORS is not blocking the request', 'warning');
+            }
+        }
+
+        async function testImageURLs() {
+            if (!window.testImages || window.testImages.length === 0) {
+                log('⚠️ Run "Test API" first to fetch images', 'warning');
+                return;
+            }
+
+            clearLog();
+            log('🖼️ Testing different image URL formats...', 'info');
+            log('', 'info');
+
+            const imagesDiv = document.getElementById('images');
+            
+            window.testImages.forEach((file, index) => {
+                log(`Testing image ${index + 1}: ${file.name}`, 'info');
+                
+                // Test multiple URL formats
+                const formats = [
+                    {
+                        name: 'Thumbnail (w2000)',
+                        url: `https://drive.google.com/thumbnail?id=${file.id}&sz=w2000`
+                    },
+                    {
+                        name: 'UC Export View',
+                        url: `https://drive.google.com/uc?export=view&id=${file.id}`
+                    },
+                    {
+                        name: 'GoogleUserContent',
+                        url: `https://lh3.googleusercontent.com/d/${file.id}`
+                    },
+                    {
+                        name: 'Thumbnail (w1000)',
+                        url: `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`
+                    }
+                ];
+
+                formats.forEach(format => {
+                    const img = document.createElement('img');
+                    img.src = format.url;
+                    img.title = `${file.name} - ${format.name}`;
+                    img.alt = file.name;
+                    
+                    img.onload = () => {
+                        log(`✅ ${format.name}: SUCCESS`, 'success');
+                        img.style.borderColor = '#4ade80';
+                    };
+                    
+                    img.onerror = () => {
+                        log(`❌ ${format.name}: FAILED`, 'error');
+                        img.style.borderColor = '#f87171';
+                        img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"><rect fill="%23333" width="150" height="150"/><text x="50%" y="50%" fill="%23f87171" text-anchor="middle" dy=".3em">Failed</text></svg>';
+                    };
+                    
+                    const container = document.createElement('div');
+                    container.style.textAlign = 'center';
+                    container.appendChild(img);
+                    
+                    const label = document.createElement('div');
+                    label.textContent = format.name;
+                    label.style.fontSize = '10px';
+                    label.style.marginTop = '5px';
+                    label.style.color = '#888';
+                    container.appendChild(label);
+                    
+                    imagesDiv.appendChild(container);
+                });
+
+                log('', 'info');
+            });
+
+            log('', 'info');
+            log('💡 TIP: Green border = URL works, Red border = URL failed', 'info');
+            log('Use the working URL format in your app!', 'info');
+        }
+    </script>
+</body>
+</html>
