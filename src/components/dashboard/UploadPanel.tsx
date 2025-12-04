@@ -121,7 +121,7 @@ export function UploadPanel({ onGenerate, isGenerating, onClear }: UploadPanelPr
       let result;
       
       try {
-        const response = await fetch("https://spijkerenco.app.n8n.cloud/webhook-test/upload-image", {
+        const response = await fetch("https://spijkerenco.app.n8n.cloud/webhook/upload-image", {
           method: "POST",
           body: formData,
           signal: controller.signal,
